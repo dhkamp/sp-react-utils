@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import { SPRest } from "@pnp/sp/presets/all";
+//import { SPRest } from "@pnp/sp/presets/all";
+import { SPRest } from "@pnp/sp";
+import "@pnp/sp/webs";
+import "@pnp/sp/lists";
 import { ICamlQuery } from "@pnp/sp/lists";
 
 function getQuery(

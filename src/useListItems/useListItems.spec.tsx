@@ -1,10 +1,18 @@
 import { useListItems } from "./useListItems.hook";
 
+jest.mock("react", () => ({
+	...jest.requireActual("React"),
+	useEffect: global.useEffect,
+	useState: (val: any) => [val, (v: any) => (val = v)],
+}));
+
 const spRest = {
 	web: {
 		getList: () => ({
 			getItemsByCAMLQuery(argv: any) {
-				console.log(argv);
+				return new Promise((resolve, reject) => {
+					console.log(argv);
+				});
 			},
 		}),
 	},
@@ -12,7 +20,8 @@ const spRest = {
 
 test("test 2", () => {
 	const [items, err] = useListItems(spRest as any, "test123");
-	expect(items.length).toEqual(0);
+	expect(global.useEffect).toHaveBeenCalledTimes(1);
+	//expect(items.length).toEqual(0);
 });
 
 test("test test", () => {
