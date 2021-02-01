@@ -4,5 +4,5 @@ module.exports = {
 		"\\.[jt]sx?$": "babel-jest",
 	},
 	transformIgnorePatterns: ["/node_modules/(?!(@pnp))/"],
-	setupFiles: ["./setupJestMocks.ts"],
+	setupFiles: ["./mocks/pnp.mocks.tsx"],
 };

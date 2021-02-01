@@ -38,6 +38,7 @@ export function useListItems(
 		function handleCatchError(err: Error) {
 			setError(err);
 		}
+
 		spRest.web
 			.getList(url)
 			.getItemsByCAMLQuery(getQuery(viewfields, where, rowlimit))

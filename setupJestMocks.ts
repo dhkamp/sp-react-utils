@@ -6,4 +6,4 @@ declare module NodeJS  {
 
 const mockUseEffect = (f: Function) => f();
 
-global.useEffect = jest.fn(() => mockUseEffect);
+global.useEffect = jest.fn(mockUseEffect);
