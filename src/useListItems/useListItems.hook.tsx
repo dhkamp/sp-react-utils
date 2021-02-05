@@ -2,49 +2,48 @@ import { useState, useEffect } from "react";
 import { SPRest } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
-import { ICamlQuery } from "@pnp/sp/lists";
 
-function getQuery(
-	viewfields: Array<string>,
-	where: string = "",
-	rowlimit: number = 0
-): ICamlQuery {
-	const vf = `<ViewFields>${viewfields.reduce((acc, v) => {
-		return (acc += `<FieldRef Name='${v}' />`);
-	}, "")}</ViewFields>`;
+import { getCAMLQuery, executeCAMLQuery } from "./useListItems.core";
 
-	const r = rowlimit > 0 ? `<RowLimit>${rowlimit}</RowLimit>` : "";
-
-	return {
-		ViewXml: `<View>${vf}${r}<Query>${where}</Query></View>`,
-	};
+export interface IUseListItemHookResult {
+	items: Array<any>;
+	isLoading: boolean;
+	error: Error;
 }
 
 export function useListItems(
 	spRest: SPRest,
 	url: string,
 	viewfields: Array<string> = [],
-	where: string = "",
-	rowlimit: number = 0
-): [Array<any>, Error] {
+	rowlimit?: number,
+	where: string = ""
+): IUseListItemHookResult {
 	const [items, setItems] = useState<Array<any>>([]);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [error, setError] = useState<Error>(null);
 
 	useEffect(() => {
+		let isUnmounted = false;
+
 		function handleItemsResponse(items: Array<any>) {
+			if (isUnmounted) return;
 			setItems(items);
+			setIsLoading(false);
 		}
 
 		function handleCatchError(err: Error) {
+			if (isUnmounted) return;
 			setError(err);
+			setIsLoading(false);
 		}
-
-		spRest.web
-			.getList(url)
-			.getItemsByCAMLQuery(getQuery(viewfields, where, rowlimit))
+		executeCAMLQuery(spRest, url, getCAMLQuery(viewfields, rowlimit, where))
 			.then(handleItemsResponse)
 			.catch(handleCatchError);
+
+		return () => {
+			isUnmounted = true;
+		};
 	}, [url, rowlimit, viewfields, where]);
 
-	return [items, error];
+	return { items, isLoading, error };
 }
