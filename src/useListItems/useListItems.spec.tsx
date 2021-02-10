@@ -1,7 +1,11 @@
+import React from "react";
 import { ICamlQuery } from "@pnp/sp/presets/all";
 import { renderHook } from "@testing-library/react-hooks";
 import { useListItems, IUseListItemHookResult } from "./useListItems.hook";
 import { executeCAMLQuery, getCAMLQuery } from "./useListItems.core";
+
+import { shallow, mount } from "enzyme";
+import { UseListItems } from "./useListItems.hoc";
 
 const mockSPRest = {
 	...jest.requireActual("@pnp/sp/presets/all"),
@@ -90,7 +94,7 @@ test("should call the sharepoint endpoint with the provided query", async () => 
 	expect(global.mockGetItemsByCAMLQuery).toHaveBeenCalledWith(query);
 });
 
-test("useListItem hook should toggle its loading state after api response", async () => {
+test("useListItems HOOK should toggle its loading state after api response", async () => {
 	const mockSPRestAdapter = {
 		...jest.requireActual("@pnp/sp/presets/all"),
 		web: {
@@ -117,7 +121,7 @@ test("useListItem hook should toggle its loading state after api response", asyn
 	expect(result.current.isLoading).toEqual(false);
 });
 
-test("useListItems hook should return items returned by the endpoint", async () => {
+test("useListItems HOOK should return items returned by the endpoint", async () => {
 	const expectedItems = ["item1", "item2"];
 
 	const mockSPRestAdapter = {
@@ -146,7 +150,7 @@ test("useListItems hook should return items returned by the endpoint", async () 
 	expect(result.current.items).toEqual(expectedItems);
 });
 
-test("useListItems hook should return an error if the promise gets rejected", async () => {
+test("useListItems HOOK should return an error if the promise gets rejected", async () => {
 	const expected = new Error("there was an error");
 
 	const mockSPRestAdapter = {
@@ -173,4 +177,33 @@ test("useListItems hook should return an error if the promise gets rejected", as
 	await waitForNextUpdate();
 
 	expect(result.current.error).toEqual(expected);
+});
+
+test("useListItems HOC should toogle its loading state after api response", async () => {
+	const mockSPRestAdapter = {
+		...jest.requireActual("@pnp/sp/presets/all"),
+		web: {
+			getList: () => ({
+				getItemsByCAMLQuery: () => Promise.resolve([]),
+			}),
+		},
+	};
+
+	const component = (items: Array<any>, isLoading: boolean) => {
+		return <div>{isLoading}</div>;
+	};
+
+	const wrapper = mount(
+		<UseListItems
+			spRestAdapter={mockSPRestAdapter}
+			component={component}
+			url={"/sites/mysite/customlist"}
+		/>
+	);
+
+	expect(wrapper.state("isLoading")).toEqual(true);
+
+	setImmediate(() => {
+		expect(wrapper.state("isLoading")).toEqual(false);
+	});
 });
