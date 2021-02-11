@@ -179,7 +179,7 @@ test("useListItems HOOK should return an error if the promise gets rejected", as
 	expect(result.current.error).toEqual(expected);
 });
 
-test("useListItems HOC should toogle its loading state after api response", async () => {
+test("useListItems HOC should toogle its loading state after API response", async () => {
 	const mockSPRestAdapter = {
 		...jest.requireActual("@pnp/sp/presets/all"),
 		web: {
@@ -205,5 +205,64 @@ test("useListItems HOC should toogle its loading state after api response", asyn
 
 	setImmediate(() => {
 		expect(wrapper.state("isLoading")).toEqual(false);
+	});
+});
+
+test("useListItems HOC should pass items resturned from the API to the passed component", async () => {
+	const mockSPRestAdapter = {
+		...jest.requireActual("@pnp/sp/presets/all"),
+		web: {
+			getList: () => ({
+				getItemsByCAMLQuery: () => Promise.resolve(["Lorem", "Ipsum"]),
+			}),
+		},
+	};
+
+	const component = (items: Array<any>, isLoading: boolean) => (
+		<div className="testcontent">Results: {items.join(",")}</div>
+	);
+
+	const wrapper = mount(
+		<UseListItems
+			spRestAdapter={mockSPRestAdapter}
+			component={component}
+			url={"/sites/mysite/customlist"}
+		/>
+	);
+
+	expect(wrapper.find(".testcontent").text()).toEqual("Results: ");
+
+	setImmediate(() => {
+		expect(wrapper.find(".testcontent").text()).toEqual("Results: Lorem,Ipsum");
+	});
+});
+
+test("useListItems HOC should return an error if the promise gets rejected", async () => {
+	const mockSPRestAdapter = {
+		...jest.requireActual("@pnp/sp/presets/all"),
+		web: {
+			getList: () => ({
+				getItemsByCAMLQuery: () =>
+					Promise.reject(new Error("Custom error message")),
+			}),
+		},
+	};
+
+	const component = (items: Array<any>, isLoading: boolean, error: Error) => (
+		<div className="testcontent">{error && error.message}</div>
+	);
+
+	const wrapper = mount(
+		<UseListItems
+			spRestAdapter={mockSPRestAdapter}
+			component={component}
+			url={"/sites/mysite/customlist"}
+		/>
+	);
+
+	expect(wrapper.find(".testcontent").text()).toEqual("");
+
+	setImmediate(() => {
+		expect(wrapper.find(".testcontent").text()).toEqual("Custom error message");
 	});
 });

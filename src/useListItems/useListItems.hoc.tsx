@@ -4,7 +4,11 @@ import { getCAMLQuery, executeCAMLQuery } from "./useListItems.core";
 
 interface IUseListItemsProps {
 	spRestAdapter: SPRest;
-	component(items: Array<any>, isLoading: boolean): React.ReactNode;
+	component(
+		items: Array<any>,
+		isLoading: boolean,
+		error: Error
+	): React.ReactNode;
 	url: string;
 	viewfields: Array<string>;
 	rowlimit?: number;
@@ -62,6 +66,10 @@ export class UseListItems extends React.PureComponent<
 		}
 	}
 	render() {
-		return this.props.component(this.state.items, this.state.isLoading);
+		return this.props.component(
+			this.state.items,
+			this.state.isLoading,
+			this.state.error
+		);
 	}
 }
