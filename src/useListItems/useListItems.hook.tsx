@@ -15,7 +15,7 @@ export function useListItems(
 	spRest: SPRest,
 	url: string,
 	viewfields: Array<string> = [],
-	rowlimit?: number,
+	rowlimit: number = 0,
 	where: string = ""
 ): IUseListItemHookResult {
 	const [items, setItems] = useState<Array<any>>([]);
